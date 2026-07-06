@@ -22,9 +22,10 @@
 | 🤖 **AI Legal Chat** | Ask complex legal questions and get structured answers citing BNS/BNSS/BSA sections |
 | 📚 **Browse Laws** | Explore and search sections of India's new criminal laws |
 | ⚖️ **Find Lawyers** | Discover and book consultations with verified legal professionals |
-| 🛡️ **Admin Dashboard** | Manage users, monitor bookings, and view chat analytics |
+| 🛡️ **Admin Dashboard** | Manage users, monitor bookings, and view all chat logs with search |
 | 🌐 **Demo / Offline Mode** | Full offline simulation using in-memory state — works without Firebase |
 | 📱 **Cross-Platform** | Runs natively on Android, iOS, and Web from a single codebase |
+| ✨ **Smooth Animations** | Staggered entrance animations on Home screen, fade+slide tab transitions |
 
 ---
 
@@ -35,6 +36,19 @@
 - **Auth & Database**: Firebase Authentication + Firebase Realtime Database
 - **State**: Local in-memory global state for Demo Mode fallback
 - **Platform Support**: Android, iOS, Web
+
+---
+
+## 🖥️ Admin Portal
+
+The admin portal (login: `admin@legally.com`) includes a 4-tab dashboard:
+
+| Tab | Description |
+|---|---|
+| 📊 **Overview** | Live stats — total users, queries, today's activity, top legal categories |
+| 👥 **Users & Activity** | Browse all registered users, view per-user chat history and bookings |
+| 💬 **Chat Logs** | All AI conversations across all users — searchable by email, question, or answer |
+| 📅 **Global Bookings** | View and manage all lawyer consultation bookings |
 
 ---
 
@@ -59,25 +73,46 @@ Firebase credentials are excluded from this repository for security. You must ad
 
 **Android:**
 - Download `google-services.json` from your Firebase project console.
-- Place it in `android/app/google-services.json`.
+- Place it at `android/app/google-services.json`.
 
 **Firebase Options (all platforms):**
 ```bash
 # Copy the example template
 cp lib/firebase_options.dart.example lib/firebase_options.dart
 ```
-- Open `lib/firebase_options.dart` and fill in your Firebase API keys and project configuration.
+- Open `lib/firebase_options.dart` and fill in your Firebase project configuration.
 
-### 3. Install Dependencies
+### 3. Firebase Realtime Database Rules
+
+For the admin portal to read all users' chat logs, set your Firebase rules to:
+
+```json
+{
+  "rules": {
+    "users":    { ".read": "auth != null", ".write": "auth != null" },
+    "chats":    { ".read": "auth != null", ".write": "auth != null" },
+    "bookings": { ".read": "auth != null", ".write": "auth != null" }
+  }
+}
+```
+
+### 4. Install Dependencies
 
 ```bash
 flutter pub get
 ```
 
-### 4. Run the App
+### 5. Run the App
 
 ```bash
 flutter run
+```
+
+### 6. Build Release APK
+
+```bash
+flutter build apk --release
+# Output: build/app/outputs/flutter-apk/app-release.apk
 ```
 
 ---
@@ -97,23 +132,25 @@ This project is configured to **never commit credentials to Git**. The following
 
 > 💡 See `lib/firebase_options.dart.example` for the expected format when setting up locally.
 
+> 🔑 Firebase client-side keys are **identifier-based, not secret-based**. Real security is enforced through Firebase Security Rules and App Check — not by hiding keys.
+
 ---
 
 ## 📁 Project Structure
 
 ```
 lib/
-├── main.dart                  # App entry point, all screens and widgets
-├── firebase_options.dart      # Firebase config (git-ignored, create locally)
+├── main.dart                      # App entry point — all screens and widgets
+├── firebase_options.dart          # Firebase config (git-ignored, create locally)
 └── firebase_options.dart.example  # Template for Firebase config
 
 android/
 └── app/
-    └── google-services.json   # Firebase Android config (git-ignored)
+    └── google-services.json       # Firebase Android config (git-ignored)
 
 ios/
 └── Runner/
-    └── GoogleService-Info.plist  # Firebase iOS config (git-ignored)
+    └── GoogleService-Info.plist   # Firebase iOS config (git-ignored)
 ```
 
 ---

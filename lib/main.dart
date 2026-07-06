@@ -105,6 +105,10 @@ class LegallyApp extends StatelessWidget {
         brightness: Brightness.dark,
         scaffoldBackgroundColor: const Color(0xFF090B0F),
         primaryColor: const Color(0xFFE2B755),
+        focusColor: const Color(0xFFE2B755),
+        hoverColor: const Color(0xFFE2B755).withValues(alpha: 0.06),
+        splashColor: const Color(0xFFE2B755).withValues(alpha: 0.10),
+        highlightColor: Colors.transparent,
         colorScheme: const ColorScheme.dark(
           primary: Color(0xFFE2B755),
           secondary: Color(0xFF4A90E2),
@@ -115,6 +119,45 @@ class LegallyApp extends StatelessWidget {
         cardColor: const Color(0xFF131720),
         dividerColor: const Color(0xFF2D323E),
         fontFamily: 'Roboto',
+        // ── Remove the green focus border everywhere ──
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: const Color(0xFF141924),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          hintStyle: const TextStyle(color: Colors.white38),
+          labelStyle: const TextStyle(color: Colors.white54),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Color(0xFF283042)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Color(0xFF283042)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Color(0xFFE2B755), width: 1.5),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.redAccent),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+          ),
+        ),
+        textSelectionTheme: const TextSelectionThemeData(
+          cursorColor: Color(0xFFE2B755),
+          selectionColor: Color(0x44E2B755),
+          selectionHandleColor: Color(0xFFE2B755),
+        ),
+        // ── Smooth page transitions ──
+        pageTransitionsTheme: const PageTransitionsTheme(
+          builders: {
+            TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
+          },
+        ),
       ),
       home: const AnimatedSplashScreen(),
     );
@@ -579,7 +622,7 @@ class _MainScreenState extends State<MainScreen> {
 
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(70),
+        preferredSize: const Size.fromHeight(60),
         child: Container(
           decoration: const BoxDecoration(
             color: Color(0xFF0D1017),
@@ -587,79 +630,83 @@ class _MainScreenState extends State<MainScreen> {
               bottom: BorderSide(color: Color(0xFF222834), width: 1),
             ),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Logo
-              GestureDetector(
-                onTap: () => _navigateToTab(0),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE2B755).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
+          padding: EdgeInsets.symmetric(
+            horizontal: isMobile ? 16 : 24,
+            vertical: isMobile ? 8 : 10,
+          ),
+          child: SafeArea(
+            child: Row(
+              children: [
+                // Logo — always shown
+                GestureDetector(
+                  onTap: () => _navigateToTab(0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(7),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE2B755).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.gavel_rounded,
+                          color: Color(0xFFE2B755),
+                          size: 20,
+                        ),
                       ),
-                      child: const Icon(
-                        Icons.gavel_rounded,
-                        color: Color(0xFFE2B755),
-                        size: 24,
+                      const SizedBox(width: 10),
+                      const Text(
+                        'Legally',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    const Text(
-                      'Legally',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Navigation Links (Desktop)
-              if (!isMobile)
-                Row(
-                  children: [
-                    _NavBarItem(
-                      title: 'Home',
-                      isActive: _currentTab == 0,
-                      onTap: () => _navigateToTab(0),
-                    ),
-                    _NavBarItem(
-                      title: 'Ask AI Chat',
-                      isActive: _currentTab == 1,
-                      onTap: () => _navigateToTab(1),
-                    ),
-                    _NavBarItem(
-                      title: 'Browse Laws',
-                      isActive: _currentTab == 2,
-                      onTap: () => _navigateToTab(2),
-                    ),
-                    _NavBarItem(
-                      title: 'Find Lawyers',
-                      isActive: _currentTab == 3,
-                      onTap: () => _navigateToTab(3),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
 
-              // Action Buttons
-              Row(
-                children: [
-                  if (!isMobile)
-                    Padding(
-                      padding: const EdgeInsets.only(right: 12.0),
-                      child: Text(
-                        widget.isDemoMode ? widget.demoEmail : (user?.email ?? 'Member'),
-                        style: const TextStyle(color: Colors.white70, fontSize: 13),
+                const Spacer(),
+
+                // Desktop: nav links
+                if (!isMobile)
+                  Row(
+                    children: [
+                      _NavBarItem(
+                        title: 'Home',
+                        isActive: _currentTab == 0,
+                        onTap: () => _navigateToTab(0),
                       ),
-                    ),
+                      _NavBarItem(
+                        title: 'Ask AI Chat',
+                        isActive: _currentTab == 1,
+                        onTap: () => _navigateToTab(1),
+                      ),
+                      _NavBarItem(
+                        title: 'Browse Laws',
+                        isActive: _currentTab == 2,
+                        onTap: () => _navigateToTab(2),
+                      ),
+                      _NavBarItem(
+                        title: 'Find Lawyers',
+                        isActive: _currentTab == 3,
+                        onTap: () => _navigateToTab(3),
+                      ),
+                      const SizedBox(width: 16),
+                    ],
+                  ),
+
+                // Desktop: email + logout + consult AI button
+                if (!isMobile) ...[
+                  Text(
+                    widget.isDemoMode ? widget.demoEmail : (user?.email ?? 'Member'),
+                    style: const TextStyle(color: Colors.white54, fontSize: 12),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(width: 12),
                   TextButton(
                     onPressed: () async {
                       if (widget.isDemoMode) {
@@ -668,40 +715,49 @@ class _MainScreenState extends State<MainScreen> {
                         await FirebaseAuth.instance.signOut();
                       }
                     },
-                    child: const Text(
-                      'Logout',
-                      style: TextStyle(color: Colors.white70),
-                    ),
+                    child: const Text('Logout', style: TextStyle(color: Colors.white70, fontSize: 13)),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 8),
                   ElevatedButton(
                     onPressed: () => _navigateToTab(1),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFE2B755),
                       foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.bolt, size: 16),
+                        Icon(Icons.bolt, size: 15),
                         SizedBox(width: 4),
-                        Text(
-                          'Consult AI',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
+                        Text('Consult AI', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                       ],
                     ),
                   ),
                 ],
-              ),
-            ],
+
+                // Mobile: compact logout icon only (navigation is in bottom bar)
+                if (isMobile)
+                  IconButton(
+                    onPressed: () async {
+                      if (widget.isDemoMode) {
+                        widget.onDemoLogout?.call();
+                      } else {
+                        await FirebaseAuth.instance.signOut();
+                      }
+                    },
+                    icon: const Icon(Icons.logout_rounded, color: Colors.white54, size: 20),
+                    tooltip: 'Logout',
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
+
       bottomNavigationBar: isMobile
           ? BottomNavigationBar(
               currentIndex: _currentTab,
@@ -734,7 +790,28 @@ class _MainScreenState extends State<MainScreen> {
               ],
             )
           : null,
-      body: _buildCurrentScreen(),
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 280),
+        transitionBuilder: (child, animation) {
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 0.03),
+                end: Offset.zero,
+              ).animate(CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOut,
+              )),
+              child: child,
+            ),
+          );
+        },
+        child: KeyedSubtree(
+          key: ValueKey<int>(_currentTab),
+          child: _buildCurrentScreen(),
+        ),
+      ),
     );
   }
 
@@ -864,6 +941,54 @@ class _HoverCardState extends State<HoverCard> {
 }
 
 // ====================================================
+// REUSABLE FADE + SLIDE ENTRANCE ANIMATION WIDGET
+// ====================================================
+class _FadeSlideIn extends StatefulWidget {
+  final Widget child;
+  final Duration delay;
+  final Duration duration;
+  const _FadeSlideIn({
+    required this.child,
+    this.delay = Duration.zero,
+    this.duration = const Duration(milliseconds: 500),
+  });
+  @override
+  State<_FadeSlideIn> createState() => _FadeSlideInState();
+}
+
+class _FadeSlideInState extends State<_FadeSlideIn> with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _opacity;
+  late final Animation<Offset> _slide;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(vsync: this, duration: widget.duration);
+    _opacity = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
+    _slide = Tween<Offset>(begin: const Offset(0, 0.06), end: Offset.zero)
+        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
+    Future.delayed(widget.delay, () {
+      if (mounted) _ctrl.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _opacity,
+      child: SlideTransition(position: _slide, child: widget.child),
+    );
+  }
+}
+
+// ====================================================
 // SCREEN 1: HOME DASHBOARD
 // ====================================================
 class HomeScreen extends StatefulWidget {
@@ -893,25 +1018,46 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         children: [
           // 1. HERO SECTION WITH GRADIENT GLOW
-          _buildHeroSection(isMobile),
+          _FadeSlideIn(
+            delay: const Duration(milliseconds: 50),
+            child: _buildHeroSection(isMobile),
+          ),
 
           // 2. KEY STATS SECTION
-          _buildStatsSection(isMobile),
+          _FadeSlideIn(
+            delay: const Duration(milliseconds: 180),
+            child: _buildStatsSection(isMobile),
+          ),
 
           // 3. CAPABILITIES GRID
-          _buildCapabilitiesSection(isMobile),
+          _FadeSlideIn(
+            delay: const Duration(milliseconds: 280),
+            child: _buildCapabilitiesSection(isMobile),
+          ),
 
           // 4. PRECEDENT SCANNER & MOCK TOOLS SECTION
-          _buildSpecialHighlightSection(isMobile),
+          _FadeSlideIn(
+            delay: const Duration(milliseconds: 360),
+            child: _buildSpecialHighlightSection(isMobile),
+          ),
 
           // 5. FAQ SECTION
-          _buildFAQSection(isMobile),
+          _FadeSlideIn(
+            delay: const Duration(milliseconds: 420),
+            child: _buildFAQSection(isMobile),
+          ),
 
           // 6. ATTORNEY CALLOUT
-          _buildLawyerCallout(isMobile),
+          _FadeSlideIn(
+            delay: const Duration(milliseconds: 480),
+            child: _buildLawyerCallout(isMobile),
+          ),
 
           // 7. FOOTER
-          const PremiumFooter(),
+          _FadeSlideIn(
+            delay: const Duration(milliseconds: 520),
+            child: const PremiumFooter(),
+          ),
         ],
       ),
     );
@@ -1802,24 +1948,37 @@ class _ChatScreenState extends State<ChatScreen> {
       final chatRef = FirebaseDatabase.instance.ref('chats/${user.uid}');
       final chatSnapshot = await chatRef.orderByChild('timestamp').get();
 
-      if (chatSnapshot.exists && chatSnapshot.value is Map) {
-        final Map<dynamic, dynamic> values = chatSnapshot.value as Map;
-        final sortedKeys = values.keys.toList()
-          ..sort((a, b) {
-            final t1 = values[a]['timestamp'] ?? 0;
-            final t2 = values[b]['timestamp'] ?? 0;
-            return t1.compareTo(t2);
-          });
-        for (var key in sortedKeys) {
-          final data = values[key];
-          if (data is Map) {
-            final userText = data['query'] ?? data['message'] ?? data['text'] ?? data['userQuery'] ?? data['question'] ?? '';
-            final aiText = data['reply'] ?? data['response'] ?? data['aiResponse'] ?? data['answer'] ?? '';
-            _messages.add({'role': 'user', 'text': userText.toString()});
-            _messages.add({'role': 'ai', 'text': aiText.toString()});
+      // Firebase can return a Map (push-ID keys) or a List (integer keys).
+      Iterable<dynamic> historyValues = [];
+      if (chatSnapshot.exists) {
+        if (chatSnapshot.value is Map) {
+          final rawMap = chatSnapshot.value as Map<dynamic, dynamic>;
+          final sortedEntries = rawMap.entries.toList()
+            ..sort((a, b) {
+              final t1 = (a.value is Map ? (a.value as Map)['timestamp'] : null) ?? 0;
+              final t2 = (b.value is Map ? (b.value as Map)['timestamp'] : null) ?? 0;
+              return (t1 as Comparable).compareTo(t2);
+            });
+          historyValues = sortedEntries.map((e) => e.value);
+        } else if (chatSnapshot.value is List) {
+          historyValues = (chatSnapshot.value as List).whereType<Object>();
+        }
+      }
+
+      bool hasHistory = false;
+      for (final data in historyValues) {
+        if (data is Map) {
+          final userText = (data['query'] ?? data['message'] ?? data['text'] ?? data['userQuery'] ?? data['question'] ?? '').toString().trim();
+          final aiText = (data['reply'] ?? data['response'] ?? data['aiResponse'] ?? data['answer'] ?? '').toString().trim();
+          if (userText.isNotEmpty && aiText.isNotEmpty) {
+            _messages.add({'role': 'user', 'text': userText});
+            _messages.add({'role': 'ai', 'text': aiText});
+            hasHistory = true;
           }
         }
-      } else {
+      }
+
+      if (!hasHistory) {
         // Default greeting if no history
         _messages.add({
           'role': 'ai',
@@ -3500,7 +3659,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   // Real-time dynamic stats
   int _totalUsers = 0;
   int _totalQueries = 0;
-  int _activeTodayCount = 1;
+  final int _activeTodayCount = 1;
   int _todaysQueriesCount = 0;
   Map<String, int> _categoryCounts = {};
 
@@ -3509,6 +3668,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   List<Map<String, String>> _selectedUserChats = [];
   List<Map<String, dynamic>> _selectedUserBookings = [];
   bool _isLoadingUserDetails = false;
+
+  // Chat Logs tab state
+  // Each entry: {uid, email, query, reply, timestamp}
+  List<Map<String, dynamic>> _allChatLogs = [];
+  bool _isLoadingChatLogs = true;
+  String _chatLogSearch = '';
 
   // References to global memory state for Demo Mode session persistence
   List<Map<String, dynamic>> get _mockUsers => _globalDemoUsers;
@@ -3522,6 +3687,103 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     _fetchUsers();
     _fetchBookings();
     _fetchStats();
+    _fetchAllChatLogs();
+  }
+
+  Future<void> _fetchAllChatLogs() async {
+    setState(() => _isLoadingChatLogs = true);
+
+    if (widget.isDemoMode) {
+      await Future.delayed(const Duration(milliseconds: 300));
+      final List<Map<String, dynamic>> logs = [];
+      _globalDemoUserChats.forEach((uid, messages) {
+        final user = _globalDemoUsers.firstWhere(
+          (u) => u['uid'] == uid,
+          orElse: () => {'email': uid},
+        );
+        // Pair messages: user message followed by ai message
+        for (int i = 0; i + 1 < messages.length; i += 2) {
+          logs.add({
+            'uid': uid,
+            'email': user['email'] ?? uid,
+            'query': messages[i]['text'] ?? '',
+            'reply': messages[i + 1]['text'] ?? '',
+            'timestamp': '',
+          });
+        }
+      });
+      setState(() {
+        _allChatLogs = logs;
+        _isLoadingChatLogs = false;
+      });
+      return;
+    }
+
+    try {
+      final chatsSnapshot = await FirebaseDatabase.instance.ref('chats').get();
+      final List<Map<String, dynamic>> logs = [];
+
+      if (chatsSnapshot.exists && chatsSnapshot.value is Map) {
+        final Map<dynamic, dynamic> userChatsMap = chatsSnapshot.value as Map;
+        for (final userKey in userChatsMap.keys) {
+          final uid = userKey.toString();
+          // Look up email from already-loaded users list
+          final matchedUser = _users.firstWhere(
+            (u) => u['uid'] == uid,
+            orElse: () => {'email': uid},
+          );
+          final String email = matchedUser['email']?.toString() ?? uid;
+
+          final userChatData = userChatsMap[userKey];
+          Iterable<dynamic> msgValues = [];
+          if (userChatData is Map) {
+            final entries = (userChatData as Map<dynamic, dynamic>).entries.toList()
+              ..sort((a, b) {
+                final t1 = (a.value is Map ? (a.value as Map)['timestamp'] : null) ?? 0;
+                final t2 = (b.value is Map ? (b.value as Map)['timestamp'] : null) ?? 0;
+                return (t1 as Comparable).compareTo(t2);
+              });
+            msgValues = entries.map((e) => e.value);
+          } else if (userChatData is List) {
+            msgValues = (userChatData as List).whereType<Object>();
+          }
+
+          for (final msg in msgValues) {
+            if (msg is Map) {
+              final query = (msg['query'] ?? msg['message'] ?? msg['text'] ?? msg['userQuery'] ?? '').toString().trim();
+              final reply = (msg['reply'] ?? msg['response'] ?? msg['aiResponse'] ?? '').toString().trim();
+              if (query.isNotEmpty && reply.isNotEmpty) {
+                // Format timestamp
+                String tsStr = '';
+                final dynamic rawTs = msg['timestamp'];
+                if (rawTs != null) {
+                  final ts = int.tryParse(rawTs.toString());
+                  if (ts != null) {
+                    final dt = DateTime.fromMillisecondsSinceEpoch(ts);
+                    tsStr = '${dt.day}/${dt.month}/${dt.year} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+                  }
+                }
+                logs.add({
+                  'uid': uid,
+                  'email': email,
+                  'query': query,
+                  'reply': reply,
+                  'timestamp': tsStr,
+                });
+              }
+            }
+          }
+        }
+      }
+
+      setState(() {
+        _allChatLogs = logs;
+        _isLoadingChatLogs = false;
+      });
+    } catch (e) {
+      debugPrint('Failed to load all chat logs: $e');
+      setState(() => _isLoadingChatLogs = false);
+    }
   }
 
   Future<void> _syncAdminProfile() async {
@@ -3708,24 +3970,50 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
     try {
       final chatRef = FirebaseDatabase.instance.ref('chats/$uid');
-      final chatSnapshot = await chatRef.orderByChild('timestamp').get();
+      final chatSnapshot = await chatRef.get();
 
       final List<Map<String, String>> chats = [];
-      if (chatSnapshot.exists && chatSnapshot.value is Map) {
-        final Map<dynamic, dynamic> values = chatSnapshot.value as Map;
-        final sortedKeys = values.keys.toList()
-          ..sort((a, b) {
-            final t1 = values[a]['timestamp'] ?? 0;
-            final t2 = values[b]['timestamp'] ?? 0;
-            return t1.compareTo(t2);
-          });
-        for (var key in sortedKeys) {
-          final data = values[key];
-          if (data is Map) {
-            final userText = data['query'] ?? data['message'] ?? data['text'] ?? data['userQuery'] ?? data['question'] ?? '';
-            final aiText = data['reply'] ?? data['response'] ?? data['aiResponse'] ?? data['answer'] ?? '';
-            chats.add({'role': 'user', 'text': userText.toString()});
-            chats.add({'role': 'ai', 'text': aiText.toString()});
+
+      // Firebase can return a Map (keyed by push ID) or a List (integer keys).
+      Iterable<dynamic> chatValues = [];
+      if (chatSnapshot.exists) {
+        if (chatSnapshot.value is Map) {
+          final rawMap = chatSnapshot.value as Map<dynamic, dynamic>;
+          // Sort by timestamp ascending
+          final sortedEntries = rawMap.entries.toList()
+            ..sort((a, b) {
+              final t1 = (a.value is Map ? (a.value as Map)['timestamp'] : null) ?? 0;
+              final t2 = (b.value is Map ? (b.value as Map)['timestamp'] : null) ?? 0;
+              return (t1 as Comparable).compareTo(t2);
+            });
+          chatValues = sortedEntries.map((e) => e.value);
+        } else if (chatSnapshot.value is List) {
+          chatValues = (chatSnapshot.value as List).whereType<Object>();
+        }
+      }
+
+      for (final data in chatValues) {
+        if (data is Map) {
+          final userText = (data['query'] ?? data['message'] ?? data['text'] ?? data['userQuery'] ?? data['question'] ?? '').toString().trim();
+          final aiText = (data['reply'] ?? data['response'] ?? data['aiResponse'] ?? data['answer'] ?? '').toString().trim();
+          // Only add if both sides have content
+          if (userText.isNotEmpty && aiText.isNotEmpty) {
+            chats.add({'role': 'user', 'text': userText});
+            chats.add({'role': 'ai', 'text': aiText});
+          }
+        }
+      }
+
+      // Fallback: if direct path was empty, try data already loaded in _allChatLogs
+      // (handles Firebase Security Rules that block per-uid reads but allow full chats node reads)
+      if (chats.isEmpty && _allChatLogs.isNotEmpty) {
+        final fallbackLogs = _allChatLogs.where((log) => log['uid'] == uid).toList();
+        for (final log in fallbackLogs) {
+          final query = (log['query'] as String).trim();
+          final reply = (log['reply'] as String).trim();
+          if (query.isNotEmpty && reply.isNotEmpty) {
+            chats.add({'role': 'user', 'text': query});
+            chats.add({'role': 'ai', 'text': reply});
           }
         }
       }
@@ -3748,7 +4036,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       });
     } catch (e) {
       debugPrint("Failed to load details for user $uid: $e");
+      // Even on error, try to show data from the already-loaded global chat logs
+      final fallbackChats = <Map<String, String>>[];
+      for (final log in _allChatLogs.where((l) => l['uid'] == uid)) {
+        final query = (log['query'] as String).trim();
+        final reply = (log['reply'] as String).trim();
+        if (query.isNotEmpty && reply.isNotEmpty) {
+          fallbackChats.add({'role': 'user', 'text': query});
+          fallbackChats.add({'role': 'ai', 'text': reply});
+        }
+      }
       setState(() {
+        _selectedUserChats = fallbackChats;
         _isLoadingUserDetails = false;
       });
     }
@@ -4011,6 +4310,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               items: const [
                 BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Overview'),
                 BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Users'),
+                BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline), label: 'Chat Logs'),
                 BottomNavigationBarItem(icon: Icon(Icons.calendar_month), label: 'Bookings'),
               ],
             )
@@ -4029,14 +4329,19 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   const SizedBox(height: 20),
                   _buildSidebarItem(0, 'Overview Dashboard', Icons.dashboard_outlined),
                   _buildSidebarItem(1, 'Users & Activity', Icons.people_outline),
-                  _buildSidebarItem(2, 'Global Bookings', Icons.calendar_today_outlined),
+                  _buildSidebarItem(2, 'Chat Logs', Icons.chat_bubble_outline_rounded),
+                  _buildSidebarItem(3, 'Global Bookings', Icons.calendar_today_outlined),
                 ],
               ),
             ),
           Expanded(
-            child: _currentTab == 0
-                ? _buildOverviewTab()
-                : (_currentTab == 1 ? _buildUsersTab(isMobile) : _buildBookingsTab()),
+            child: switch (_currentTab) {
+              0 => _buildOverviewTab(),
+              1 => _buildUsersTab(isMobile),
+              2 => _buildChatLogsTab(),
+              3 => _buildBookingsTab(),
+              _ => _buildOverviewTab(),
+            },
           ),
         ],
       ),
@@ -4426,7 +4731,33 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                             ),
                             const SizedBox(height: 16),
                             _selectedUserChats.isEmpty
-                                ? const Text('No chat logs recorded in database for this user.', style: TextStyle(color: Colors.white30, fontSize: 13))
+                                ? Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'No chat logs found for this user via direct lookup.',
+                                        style: TextStyle(color: Colors.white30, fontSize: 13),
+                                      ),
+                                      const SizedBox(height: 10),
+                                      Row(
+                                        children: [
+                                          OutlinedButton.icon(
+                                            onPressed: () => _selectUser(_selectedUser!),
+                                            icon: const Icon(Icons.refresh, size: 13, color: Color(0xFFE2B755)),
+                                            label: const Text('Retry', style: TextStyle(color: Color(0xFFE2B755), fontSize: 12)),
+                                            style: OutlinedButton.styleFrom(side: const BorderSide(color: Color(0xFFE2B755))),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          OutlinedButton.icon(
+                                            onPressed: () => setState(() => _currentTab = 2),
+                                            icon: const Icon(Icons.open_in_new, size: 13, color: Colors.white38),
+                                            label: const Text('View in Chat Logs tab', style: TextStyle(color: Colors.white54, fontSize: 12)),
+                                            style: OutlinedButton.styleFrom(side: const BorderSide(color: Color(0xFF333E56))),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  )
                                 : ListView.builder(
                                     shrinkWrap: true,
                                     physics: const NeverScrollableScrollPhysics(),
@@ -4499,7 +4830,190 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     return ts.toString();
   }
 
+  Widget _buildChatLogsTab() {
+    final filtered = _chatLogSearch.trim().isEmpty
+        ? _allChatLogs
+        : _allChatLogs.where((log) {
+            final q = _chatLogSearch.toLowerCase();
+            return (log['email'] as String).toLowerCase().contains(q) ||
+                (log['query'] as String).toLowerCase().contains(q) ||
+                (log['reply'] as String).toLowerCase().contains(q);
+          }).toList();
+
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text(
+                'All Chat Logs',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+              const SizedBox(width: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE2B755).withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '${filtered.length} conversations',
+                  style: const TextStyle(color: Color(0xFFE2B755), fontSize: 11, fontWeight: FontWeight.bold),
+                ),
+              ),
+              const Spacer(),
+              TextButton.icon(
+                onPressed: () async {
+                  await _fetchUsers();
+                  await _fetchAllChatLogs();
+                },
+                icon: const Icon(Icons.refresh, size: 16, color: Color(0xFFE2B755)),
+                label: const Text('Refresh', style: TextStyle(color: Color(0xFFE2B755))),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // Search bar
+          TextField(
+            onChanged: (val) => setState(() => _chatLogSearch = val),
+            style: const TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+              hintText: 'Search by user email, question, or answer...',
+              hintStyle: const TextStyle(color: Colors.white30, fontSize: 13),
+              prefixIcon: const Icon(Icons.search, color: Colors.white38, size: 18),
+              filled: true,
+              fillColor: const Color(0xFF131720),
+              contentPadding: const EdgeInsets.symmetric(vertical: 10),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: Color(0xFF222834)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: Color(0xFF222834)),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: _isLoadingChatLogs
+                ? const Center(child: CircularProgressIndicator(color: Color(0xFFE2B755)))
+                : filtered.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.chat_bubble_outline, color: Colors.white12, size: 56),
+                            const SizedBox(height: 12),
+                            Text(
+                              _chatLogSearch.isEmpty
+                                  ? 'No chat logs recorded in database yet.'
+                                  : 'No results match "${_chatLogSearch}".',
+                              style: const TextStyle(color: Colors.white30, fontSize: 13),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: filtered.length,
+                        itemBuilder: (context, idx) {
+                          final log = filtered[idx];
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF131720),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: const Color(0xFF222834)),
+                            ),
+                            child: ExpansionTile(
+                              tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                              childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                              iconColor: const Color(0xFFE2B755),
+                              collapsedIconColor: Colors.white38,
+                              title: Row(
+                                children: [
+                                  const Icon(Icons.person_outline, size: 14, color: Color(0xFFE2B755)),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      log['email'] as String,
+                                      style: const TextStyle(fontSize: 13, color: Colors.white70, fontWeight: FontWeight.w500),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              subtitle: Padding(
+                                padding: const EdgeInsets.only(top: 4.0),
+                                child: Text(
+                                  log['query'] as String,
+                                  style: const TextStyle(fontSize: 12, color: Colors.white38),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if ((log['timestamp'] as String).isNotEmpty)
+                                    Text(
+                                      log['timestamp'] as String,
+                                      style: const TextStyle(fontSize: 10, color: Colors.white30),
+                                    ),
+                                  const SizedBox(width: 8),
+                                ],
+                              ),
+                              children: [
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF182238),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text('CLIENT QUERY', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.lightBlueAccent)),
+                                      const SizedBox(height: 6),
+                                      Text(log['query'] as String, style: const TextStyle(color: Colors.white, fontSize: 13)),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF141924),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: const Color(0xFF222B3E)),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text('LEGALLY AI RESPONSE', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFFE2B755))),
+                                      const SizedBox(height: 6),
+                                      Text(log['reply'] as String, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildBookingsTab() {
+
     return Padding(
       padding: const EdgeInsets.all(20.0),
       child: Column(
